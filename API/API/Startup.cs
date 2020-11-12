@@ -75,6 +75,14 @@ namespace API
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseStatusCodePages(async context =>
+                {
+                    context.HttpContext.Response.ContentType = "text/plain";
+                    await context.HttpContext.Response.WriteAsync($"Status Code: {context.HttpContext.Response.StatusCode}");
+                });
+            }
 
             //swagger middleware enabled to generate Swagger as JSON endpoint
             app.UseSwagger();
