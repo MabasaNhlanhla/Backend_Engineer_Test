@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using API.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace API.Controllers
 {
@@ -17,16 +18,20 @@ namespace API.Controllers
     {
         private readonly IChuckService _chuckService;
         private readonly ISwapiService _swapiService;
-        public SearchController(IChuckService chuckService, ISwapiService swapiService)
+        private readonly ILogger<SearchController> _logger;
+        public SearchController(IChuckService chuckService, ISwapiService swapiService, ILogger<SearchController> logger)
         {
             _chuckService = chuckService;
             _swapiService = swapiService;
+            _logger = logger;
         }
 
         [HttpGet()]
         public async Task<IActionResult> Get([FromQuery]string query = "")
         {
-            if(query != "")
+            _logger.LogInformation(1, "Fetching search query");
+
+            if (query != "")
             {
                 HttpResponseMessage jokes = null, people = null;
                 Parallel.Invoke(() => jokes = _chuckService.SearchJokes(query).Result,
@@ -36,15 +41,21 @@ namespace API.Controllers
 
                 if (results.Count != 0)
                 {
+                    _logger.LogInformation(2, "Search query retrieved successfully");
+
                     return Ok(results);
                 }
                 else
                 {
+                    _logger.LogInformation(3, "Something went wrong while fetching categories");
+
                     return NotFound();
                 }
             }
             else
             {
+                _logger.LogInformation(4, "The given search query was malformed");
+
                 return BadRequest();
             }
 
